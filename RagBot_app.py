@@ -5,7 +5,7 @@ from openai import OpenAI
 #-----------------------------------------------#
 ## Checkpoint 1: Set up openai client and and define a completion helper function
 #-----------------------------------------------#
-client_openai = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+client_openai = OpenAI()
 
 
 def get_completion(prompt):
@@ -13,7 +13,7 @@ def get_completion(prompt):
 
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "You're a helpful assistant who looks answers up for a user in a collection of instructional textbooks on topics related to business ethics and data science and returns the answer to the user's question. If the answer is not in the textbooks, you say 'I'm sorry, I don't have access to that information.'"},
+            {"role": "system", "content": "You're a helpful assistant who looks answers up for a user in a textbook and returns the answer to the user's question. If the answer is not in the textbook, you say 'I'm sorry, I don't have access to that information.'"},
             {"role": "user", "content": prompt},
         ]
     )
@@ -24,17 +24,15 @@ def get_completion(prompt):
 ## Checkpoint 2: Setup Streamlit App w Chromadb
 ##-----------------------------------------------##
 
-client_chroma = chromadb.PersistentClient("./collection")
-collection = client_chroma.get_or_create_collection(name="mycollection", metadata={"hnsw:space": "cosine"})
+client_chroma = chromadb.PersistentClient("./mycollection")
+collection = client_chroma.get_or_create_collection(name="RAG_Assistant", metadata={"hnsw:space": "cosine"})
 
-st.title("Digit'Ed Virtual Assistant")
+st.title("Similarity Search App")
 st.markdown("This app uses Chroma to perform similarity searches on a collection of documents and OpenAI to answer questions based on the search results.")
 st.sidebar.title("Configuration")
 st.sidebar.markdown("Adjust the settings for your query.")
 n_results = st.sidebar.number_input("Number of results", min_value=1, max_value=10, value=1)
 user_question = st.text_area("Ask a question", key="user_question")
-
-
 
 if st.button("Get Answers"):
     st.write(f"Question: {user_question}")
@@ -67,7 +65,7 @@ if st.button("Get Answers"):
     ## Checkpoint 4: Test your app!
     ##-----------------------------------------------##
     metadata_prompt = f"""
-    Your task is to answer the following user question using the supplied search results. At the end of each search result will be Metadata. Cite the passages and their chunk index in your answer.
+    Your task is to answer the following user question using the supplied search results. At the end of each search result will be Metadata. Cite the passages, their chunk index, and their URL in your answer.
     User Question: {user_question}
     Search Results: {search_text}
     """
@@ -77,5 +75,4 @@ if st.button("Get Answers"):
 
     ##-----------------------------------------------##
 
-
-#st.write(f"Number of documents in collection: {collection.count()}")
+st.write(f"Number of documents in collection: {collection.count()}")
