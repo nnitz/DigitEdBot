@@ -12,7 +12,7 @@ with open("transcript_clean.txt", "r", encoding="utf-8") as file:
 # Step 2: Create a text splitter
 text_splitter = RecursiveCharacterTextSplitter(
     separators=["\n"],
-    chunk_size=300,
+    chunk_size=200,
     chunk_overlap=50,
 )
 
